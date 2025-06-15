@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elsa Real-Time Leaderboard Demo - FastAPI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 20px;
+            height: 90vh;
+        }
+        
+        .panel {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            overflow-y: auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            grid-column: 1 / -1;
+        }
+        
+        .header h1 {
+            color: white;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            color: rgba(255,255,255,0.9);
+            font-size: 1.1em;
+        }
+        
+        .controls-panel h2 {
+            color: #333;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .leaderboard-panel h2 {
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .status {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .status.connected {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.disconnected {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.connecting {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .user-selection {
+            margin-bottom: 25px;
+        }
+        
+        .user-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .user-card {
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+        
+        .user-card:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+            transform: translateY(-2px);
+        }
+        
+        .user-card.selected {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+        
+        .user-avatar {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+        
+        .user-name {
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        
+        .demo-controls {
+            margin-top: 25px;
+        }
+        
+        .control-group {
+            margin-bottom: 20px;
+        }
+        
+        .control-group h4 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #333;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .point-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .user-stats {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .stat-label {
+            color: #666;
+        }
+        
+        .stat-value {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .leaderboard {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 4px solid #ddd;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .leaderboard-item.rank-1 {
+            border-left-color: #ffd700;
+            background: linear-gradient(135deg, #fff9e6, #f8f9fa);
+        }
+        
+        .leaderboard-item.rank-2 {
+            border-left-color: #c0c0c0;
+            background: linear-gradient(135deg, #f5f5f5, #f8f9fa);
+        }
+        
+        .leaderboard-item.rank-3 {
+            border-left-color: #cd7f32;
+            background: linear-gradient(135deg, #fdf6f0, #f8f9fa);
+        }
+        
+        .leaderboard-item.updated {
+            animation: pulse 0.6s ease-in-out;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3); }
+        }
+        
+        .rank {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #666;
+            min-width: 40px;
+            text-align: center;
+        }
+        
+        .rank.gold { color: #ffd700; }
+        .rank.silver { color: #c0c0c0; }
+        .rank.bronze { color: #cd7f32; }
+        
+        .avatar {
+            font-size: 2.5em;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .player-info {
+            flex: 1;
+        }
+        
+        .player-name {
+            font-weight: bold;
+            color: #333;
+            font-size: 1.1em;
+        }
+        
+        .player-status {
+            font-size: 0.8em;
+            color: #666;
+            margin-top: 2px;
+        }
+        
+        .score {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .connection-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        
+        .connection-indicator.connected {
+            background: #28a745;
+            animation: blink 2s infinite;
+        }
+        
+        .connection-indicator.disconnected {
+            background: #dc3545;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+        
+        .notifications {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            max-width: 300px;
+        }
+        
+        .notification {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            animation: slideIn 0.3s ease;
+        }
+        
+        .notification.success {
+            border-left: 4px solid #28a745;
+        }
+        
+        .notification.info {
+            border-left: 4px solid #17a2b8;
+        }
+        
+        .notification.warning {
+            border-left: 4px solid #ffc107;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+        
+        .empty-state .icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+        
+        .live-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #dc3545;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            animation: pulse-dot 1s infinite;
+        }
+        
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .fastapi-badge {
+            background: #009688;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏆 Real-Time Leaderboard Demo</h1>
+        <p>Elsa Quiz System - FastAPI WebSocket & Redis Powered Rankings 
+            <span class="fastapi-badge">FastAPI</span>
+        </p>
+    </div>
+    
+    <div class="container">
+        <!-- Controls Panel -->
+        <div class="panel controls-panel">
+            <h2>🎮 Demo Controls</h2>
+            
+            <div id="status" class="status disconnected">
+                🔴 Disconnected from server
+            </div>
+            
+            <div class="user-selection">
+                <h4>Select Demo User</h4>
+                <div class="user-grid" id="userGrid">
+                    <!-- Users will be populated by JavaScript -->
+                </div>
+            </div>
+            
+            <div id="userStats" class="user-stats" style="display: none;">
+                <h4>Your Stats</h4>
+                <div class="stat-row">
+                    <span class="stat-label">Current Score:</span>
+                    <span class="stat-value" id="currentScore">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Current Rank:</span>
+                    <span class="stat-value" id="currentRank">-</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Connected Users:</span>
+                    <span class="stat-value" id="connectedUsers">0</span>
+                </div>
+            </div>
+            
+            <div class="demo-controls">
+                <div class="control-group">
+                    <h4>Score Updates</h4>
+                    <div class="point-buttons">
+                        <button class="btn-success" onclick="addPoints(10)" id="add10">+10 pts</button>
+                        <button class="btn-success" onclick="addPoints(25)" id="add25">+25 pts</button>
+                        <button class="btn-warning" onclick="addPoints(50)" id="add50">+50 pts</button>
+                        <button class="btn-warning" onclick="addPoints(100)" id="add100">+100 pts</button>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <h4>Demo Management</h4>
+                    <div class="button-group">
+                        <button class="btn-primary" onclick="populateDemo()">Populate Demo Data</button>
+                        <button class="btn-danger" onclick="resetLeaderboard()">Reset Leaderboard</button>
+                        <button class="btn-secondary" onclick="refreshLeaderboard()">Refresh Data</button>
+                        <button class="btn-secondary" onclick="connectWebSocket()">Reconnect</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Leaderboard Panel -->
+        <div class="panel leaderboard-panel">
+            <h2>
+                🏆 Live Leaderboard
+                <div class="live-indicator">
+                    <div class="live-dot"></div>
+                    LIVE
+                </div>
+            </h2>
+            
+            <div id="leaderboard" class="leaderboard">
+                <div class="empty-state">
+                    <div class="icon">🎯</div>
+                    <h3>Join the Demo!</h3>
+                    <p>Select a user above to start the real-time leaderboard demonstration</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="notifications" id="notifications"></div>
+
+    <script>
+        let websocket;
+        let currentUser = null;
+        let currentScore = 0;
+        let currentRank = null;
+        let reconnectAttempts = 0;
+        let maxReconnectAttempts = 5;
+        
+        const demoUsers = {
+            'alice': { id: 'alice', username: 'Alice', avatar: '👩', color: '#e91e63' },
+            'bob': { id: 'bob', username: 'Bob', avatar: '👨', color: '#2196f3' },
+            'charlie': { id: 'charlie', username: 'Charlie', avatar: '🧑', color: '#ff9800' },
+            'diana': { id: 'diana', username: 'Diana', avatar: '👩‍🦱', color: '#4caf50' },
+            'eve': { id: 'eve', username: 'Eve', avatar: '👱‍♀️', color: '#9c27b0' },
+            'frank': { id: 'frank', username: 'Frank', avatar: '👨‍🦲', color: '#795548' }
+        };
+        
+        // WebSocket connection management
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws`;
+            console.log('wsUrl:', wsUrl);
+            
+            updateStatus('connecting', '🟡 Connecting to FastAPI server...');
+            
+            websocket = new WebSocket(wsUrl);
+            
+            websocket.onopen = function(event) {
+                updateStatus('connected', '🟢 Connected to FastAPI server');
+                showNotification('Connected to FastAPI WebSocket server!', 'success');
+                reconnectAttempts = 0;
+                
+                // Rejoin if user was previously selected
+                if (currentUser) {
+                    joinDemo(currentUser);
+                }
+            };
+            
+            websocket.onmessage = function(event) {
+                const message = JSON.parse(event.data);
+                handleWebSocketMessage(message);
+            };
+            
+            websocket.onclose = function(event) {
+                updateStatus('disconnected', '🔴 Disconnected from FastAPI server');
+                
+                if (reconnectAttempts < maxReconnectAttempts) {
+                    reconnectAttempts++;
+                    showNotification(`Connection lost. Reconnecting... (${reconnectAttempts}/${maxReconnectAttempts})`, 'warning');
+                    setTimeout(connectWebSocket, 2000 * reconnectAttempts);
+                } else {
+                    showNotification('Connection lost. Please refresh the page.', 'warning');
+                }
+            };
+            
+            websocket.onerror = function(error) {
+                console.error('WebSocket error:', error);
+                showNotification('WebSocket connection error', 'warning');
+            };
+        }
+        
+        // Handle incoming WebSocket messages
+        function handleWebSocketMessage(message) {
+            const { type, data } = message;
+            
+            switch (type) {
+                case 'leaderboard-update':
+                    updateLeaderboard(data.leaderboard);
+                    
+                    if (data.lastUpdate && data.lastUpdate.userId !== currentUser) {
+                        const update = data.lastUpdate;
+                        if (update.type === 'demo_data_populated') {
+                            showNotification(update.message, 'info');
+                        } else if (update.type === 'leaderboard_reset') {
+                            showNotification(update.message, 'info');
+                        } else if (update.pointsEarned) {
+                            showNotification(`${update.username} scored ${update.pointsEarned} points!`, 'success');
+                        }
+                    }
+                    break;
+                    
+                case 'user-rank-update':
+                    currentScore = data.score;
+                    currentRank = data.rank;
+                    updateUserStats();
+                    break;
+                    
+                case 'participant-joined':
+                    showNotification(`${data.username} joined the demo!`, 'info');
+                    updateConnectedUsers(data.totalParticipants);
+                    break;
+                    
+                case 'participant-left':
+                    showNotification(`${data.username} left the demo`, 'info');
+                    updateConnectedUsers(data.totalParticipants);
+                    break;
+                    
+                case 'error':
+                    showNotification(data.message, 'warning');
+                    break;
+                    
+                default:
+                    console.log('Unknown message type:', type, data);
+            }
+        }
+        
+        // Send message to WebSocket
+        function sendWebSocketMessage(type, data) {
+            if (websocket && websocket.readyState === WebSocket.OPEN) {
+                websocket.send(JSON.stringify({ type, data }));
+            } else {
+                showNotification('Not connected to FastAPI server', 'warning');
+            }
+        }
+        
+        // Populate user selection grid
+        function populateUserGrid() {
+            const userGrid = document.getElementById('userGrid');
+            userGrid.innerHTML = '';
+            
+            Object.values(demoUsers).forEach(user => {
+                const userCard = document.createElement('div');
+                userCard.className = 'user-card';
+                userCard.dataset.userId = user.id;
+                userCard.onclick = () => selectUser(user.id);
+                
+                userCard.innerHTML = `
+                    <div class="user-avatar">${user.avatar}</div>
+                    <div class="user-name">${user.username}</div>
+                `;
+                
+                userGrid.appendChild(userCard);
+            });
+        }
+        
+        // Select user and join demo
+        function selectUser(userId) {
+            // Update UI selection
+            document.querySelectorAll('.user-card').forEach(card => {
+                card.classList.toggle('selected', card.dataset.userId === userId);
+            });
+            
+            currentUser = userId;
+            
+            // Join demo
+            joinDemo(userId);
+            
+            // Show user stats
+            document.getElementById('userStats').style.display = 'block';
+            
+            // Enable control buttons
+            document.querySelectorAll('.demo-controls button').forEach(btn => {
+                if (!btn.onclick || 
+                    !btn.onclick.toString().includes('connect') && 
+                    !btn.onclick.toString().includes('refresh') && 
+                    !btn.onclick.toString().includes('populate') && 
+                    !btn.onclick.toString().includes('reset')) {
+                    btn.disabled = false;
+                }
+            });
+            
+            showNotification(`Joined as ${demoUsers[userId].username}!`, 'success');
+        }
+        
+        // Join demo via WebSocket
+        function joinDemo(userId) {
+            console.log('joinDemo - userId:', userId);
+            sendWebSocketMessage('join-demo', {
+                userId: userId,
+                sessionId: 'DEMO123'
+            });
+        }
+        
+        // Add points to current user
+        function addPoints(points) {
+            if (!currentUser) {
+                showNotification('Please select a user first', 'warning');
+                return;
+            }
+            
+            sendWebSocketMessage('update-score', { points });
+            showNotification(`Added ${points} points!`, 'success');
+        }
+        
+        // Update leaderboard display
+        function updateLeaderboard(leaderboard) {
+            const container = document.getElementById('leaderboard');
+            
+            if (!leaderboard || leaderboard.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">🎯</div>
+                        <h3>No scores yet!</h3>
+                        <p>Add some points or populate demo data to see the leaderboard</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            leaderboard.forEach((player, index) => {
+                const item = document.createElement('div');
+                item.className = `leaderboard-item rank-${player.rank}`;
+                item.dataset.userId = player.userId;
+                
+                // Add update animation for recent changes
+                setTimeout(() => item.classList.add('updated'), 100);
+                setTimeout(() => item.classList.remove('updated'), 700);
+                
+                const rankClass = player.rank === 1 ? 'gold' : 
+                                 player.rank === 2 ? 'silver' : 
+                                 player.rank === 3 ? 'bronze' : '';
+                
+                item.innerHTML = `
+                    <div class="rank ${rankClass}">#${player.rank}</div>
+                    <div class="avatar" style="background: ${player.color}20;">${player.avatar}</div>
+                    <div class="player-info">
+                        <div class="player-name">${player.username}</div>
+                        <div class="player-status">
+                            ${player.userId === currentUser ? 'You' : 'Participant'}
+                        </div>
+                    </div>
+                    <div class="score">${player.score}</div>
+                    <div class="connection-indicator ${player.isConnected ? 'connected' : 'disconnected'}"></div>
+                `;
+                
+                container.appendChild(item);
+            });
+        }
+        
+        // Update user stats display
+        function updateUserStats() {
+            document.getElementById('currentScore').textContent = currentScore;
+            document.getElementById('currentRank').textContent = currentRank || '-';
+        }
+        
+        // Update connected users count
+        function updateConnectedUsers(count) {
+            document.getElementById('connectedUsers').textContent = count;
+        }
+        
+        // Update connection status
+        function updateStatus(type, message) {
+            const status = document.getElementById('status');
+            status.className = `status ${type}`;
+            status.textContent = message;
+        }
+        
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            
+            document.getElementById('notifications').appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+        
+        // Demo management functions
+        function populateDemo() {
+            fetch('/api/demo/populate', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    showNotification('Demo data populated!', 'success');
+                })
+                .catch(error => {
+                    showNotification('Error populating demo data', 'warning');
+                });
+        }
+        
+        function resetLeaderboard() {
+            fetch('/api/demo/reset', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    showNotification('Leaderboard reset!', 'success');
+                })
+                .catch(error => {
+                    showNotification('Error resetting leaderboard', 'warning');
+                });
+        }
+        
+        function refreshLeaderboard() {
+            fetch('/api/leaderboard/DEMO123')
+                .then(response => response.json())
+                .then(data => {
+                    updateLeaderboard(data.leaderboard);
+                    showNotification('Leaderboard refreshed!', 'info');
+                })
+                .catch(error => {
+                    showNotification('Error refreshing leaderboard', 'warning');
+                });
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            populateUserGrid();
+            connectWebSocket();
+            
+            // Disable score control buttons initially
+            document.querySelectorAll('#add10, #add25, #add50, #add100').forEach(btn => {
+                btn.disabled = true;
+            });
+        });
+    </script>
+</body>
+</html>

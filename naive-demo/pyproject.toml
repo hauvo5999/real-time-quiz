@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "elsa-leaderboard-demo"
+version = "1.0.0"
+description = "Real-time leaderboard demo for Elsa coding challenge using FastAPI"
+authors = [{name = "Your Name", email = "your.email@example.com"}]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "fastapi>=0.104.1",
+    "uvicorn[standard]>=0.24.0",
+    "websockets>=12.0",
+    "redis[hiredis]>=5.0.1",
+    "pydantic>=2.5.0",
+    "python-multipart>=0.0.6"
+]
+
+[project.urls]
+Homepage = "https://github.com/yourusername/elsa-leaderboard-demo"
+Documentation = "https://github.com/yourusername/elsa-leaderboard-demo#readme"
+Repository = "https://github.com/yourusername/elsa-leaderboard-demo.git"
+
+[project.scripts]
+elsa-demo = "main:main"
+
+[tool.setuptools]
+packages = ["src"]
+
+[tool.black]
+line-length = 88
+target-version = ['py38']
+
+[tool.isort]
+profile = "black"
