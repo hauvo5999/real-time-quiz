@@ -1,0 +1,40 @@
+name: "real-time-quiz"
+services:
+  postgres:
+    image: postgres:${POSTGRES_VERSION:-13}
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./:/opt
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: real-time-quiz
+      POSTGRES_USER: hauvo
+      POSTGRES_PASSWORD: hauvo
+    tty: true
+
+  redis:
+    image: redis:${REDIS_VERSION:-7}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    tty: true
+
+  redis-pubsub:
+    image: redis:${REDIS_VERSION:-7}
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_pubsub_data:/data
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    tty: true
+
+volumes:
+  postgres_data:
+  redis_data:
+  redis_pubsub_data:
