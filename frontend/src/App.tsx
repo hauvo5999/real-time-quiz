@@ -4,10 +4,11 @@ import { QuizSession } from './components/QuizSession'
 
 function App() {
   const [username, setUsername] = useState('')
+  const [quizId, setQuizId] = useState('')
   const [isJoined, setIsJoined] = useState(false)
 
   const handleJoin = () => {
-    if (username.trim()) {
+    if (username.trim() && quizId.trim()) {
       setIsJoined(true)
     }
   }
@@ -45,11 +46,18 @@ function App() {
               onChange={(e) => setUsername(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleJoin()}
             />
+            <TextField
+              fullWidth
+              label="Enter Quiz ID"
+              value={quizId}
+              onChange={(e) => setQuizId(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleJoin()}
+            />
             <Button
               fullWidth
               variant="contained"
               onClick={handleJoin}
-              disabled={!username.trim()}
+              disabled={!username.trim() || !quizId.trim()}
             >
               Join Quiz
             </Button>
@@ -59,7 +67,7 @@ function App() {
     )
   }
 
-  return <QuizSession username={username} />
+  return <QuizSession username={username} quizId={quizId} />
 }
 
 export default App

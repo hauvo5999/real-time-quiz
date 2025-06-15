@@ -41,7 +41,8 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ quizId, token, currentUserId 
   useEffect(() => {
     // Connect to WebSocket
     const websocket = new WebSocket(
-      `ws://localhost:8000/ws/leaderboard/${quizId}?token=${token}`
+    //   `ws://localhost:8000/ws/leaderboard/quiz/${quizId}?token=${token}`
+      `ws://localhost:8000/ws/leaderboard/quiz/${quizId}`
     );
 
     websocket.onopen = () => {

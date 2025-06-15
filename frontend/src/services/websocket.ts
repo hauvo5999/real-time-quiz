@@ -12,13 +12,14 @@ class WebSocketService {
     return WebSocketService.instance;
   }
 
-  connectToLeaderboard(quizId: string, token: string, onMessage: (data: any) => void) {
+  connectToLeaderboard(quizId: string, onMessage: (data: any) => void) {
     if (this.leaderboardWs) {
       this.leaderboardWs.close();
     }
 
     this.leaderboardWs = new WebSocket(
-      `ws://localhost:8000/ws/leaderboard/${quizId}?token=${token}`
+      // `ws://localhost:8000/ws/leaderboard/${quizId}?token=${token}`
+      `ws://localhost:8000/ws/leaderboard/quiz/${quizId}`
     );
 
     this.leaderboardWs.onmessage = (event) => {
@@ -35,13 +36,14 @@ class WebSocketService {
     };
   }
 
-  connectToScore(quizId: string, token: string) {
+  connectToScore(quizId: string, userId: string) {
     if (this.scoreWs) {
       this.scoreWs.close();
     }
 
     this.scoreWs = new WebSocket(
-      `ws://localhost:8000/ws/score/${quizId}?token=${token}`
+      // `ws://localhost:8000/ws/score/${quizId}?token=${token}`
+      `ws://localhost:8000/ws/quiz/${quizId}/user/${userId}`
     );
 
     this.scoreWs.onerror = (error) => {
