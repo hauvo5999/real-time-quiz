@@ -1,8 +1,8 @@
 # Presentation Video
 
 ## Real-Time Vocabulary Quiz System - ELSA Coding Challenge
-https://www.youtube.com/watch?v=wX_PqK45NF
-[![Video Thumbnail](images/YouTube.png)](https://www.youtube.com/watch?v=wX_PqK45NF){width=50%}
+<a href="https://www.youtube.com/watch?v=wX_PqK45NF" target="_blank">https://www.youtube.com/watch?v=wX_PqK45NF</a>
+[![Video Thumbnail](images/YouTube.png)](https://www.youtube.com/watch?v=wX_PqK45NF){target="_blank" width=50%}
 
 ### Video Content
 
