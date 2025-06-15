@@ -2,6 +2,11 @@
 
 A real-time quiz system built with FastAPI, React, and WebSocket for real-time features.
 
+#### Topic: [topic.md](topic.md)
+#### Submitsion documents for the Elsa Coding Challenge:
+- [System Design Document](system-design.md)
+- [AI Collaboration Documentation](AI-Collaboration-Document.md)
+- [Presentation Video](presentation-video-link.md)
 ## System Architecture
 
 ![System Architecture](images/image.png)
