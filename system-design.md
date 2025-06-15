@@ -251,7 +251,7 @@ Using regex with prefix "leaderboard:{quiz_id}" to get all part of the leaderboa
 
 ## Data flow
 
-Participant joins a quiz
+### Participant joins a quiz
 
 ![image.png](images/image%201.png)
 
