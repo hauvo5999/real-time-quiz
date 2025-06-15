@@ -22,6 +22,7 @@ import {
   CircularProgress,
   Snackbar,
   Divider,
+  useTheme,
 } from '@mui/material'
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'
 import MilitaryTechIcon from '@mui/icons-material/MilitaryTech'
@@ -59,7 +60,7 @@ interface Notification {
   duration?: number
 }
 
-export function QuizSession({ username, quizId }: QuizSessionProps) {
+export default function QuizSession({ username, quizId }: QuizSessionProps) {
   const [answer, setAnswer] = useState('')
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
   const [error, setError] = useState<string | null>(null)
@@ -71,6 +72,8 @@ export function QuizSession({ username, quizId }: QuizSessionProps) {
   const [userScore, setUserScore] = useState(0)
   const [userRank, setUserRank] = useState<number | null>(null)
   const ws = useRef<WebSocket | null>(null)
+
+  const theme = useTheme()
 
   useEffect(() => {
     // Connect to WebSocket with username
@@ -206,19 +209,56 @@ export function QuizSession({ username, quizId }: QuizSessionProps) {
           {/* Current Question or Quiz Completion */}
           {!isQuizComplete ? (
             currentQuestion ? (
-              <Paper elevation={3} sx={{ p: 3 }}>
-                <Stack spacing={2}>
+              <Paper
+                elevation={4}
+                sx={{
+                  p: 4,
+                  background: 'linear-gradient(145deg, #ffffff 0%, #f5f5f5 100%)',
+                  borderRadius: 3,
+                }}
+              >
+                <Stack spacing={3}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography variant="h5">Current Question</Typography>
+                    <Typography 
+                      variant="h5" 
+                      sx={{ 
+                        fontWeight: 600,
+                        color: theme.palette.primary.main,
+                      }}
+                    >
+                      Current Question
+                    </Typography>
                     <Chip
                       label={`Time Left: ${timeLeft}s`}
                       color={timeLeft <= 10 ? 'error' : 'primary'}
                       icon={timeLeft <= 10 ? <CircularProgress size={20} color="inherit" /> : undefined}
+                      sx={{
+                        fontWeight: 600,
+                        boxShadow: timeLeft <= 10 ? '0 0 10px rgba(211, 47, 47, 0.3)' : 'none',
+                      }}
                     />
                   </Box>
-                  <Typography variant="body1">{currentQuestion.text}</Typography>
+                  <Typography 
+                    variant="body1" 
+                    sx={{ 
+                      fontSize: '1.1rem',
+                      lineHeight: 1.6,
+                      color: theme.palette.text.primary,
+                    }}
+                  >
+                    {currentQuestion.text}
+                  </Typography>
                   <FormControl component="fieldset">
-                    <FormLabel component="legend">Select your answer:</FormLabel>
+                    <FormLabel 
+                      component="legend"
+                      sx={{ 
+                        color: theme.palette.primary.main,
+                        fontWeight: 600,
+                        mb: 2,
+                      }}
+                    >
+                      Select your answer:
+                    </FormLabel>
                     <RadioGroup
                       value={selectedAnswer}
                       onChange={(e) => setSelectedAnswer(e.target.value)}
@@ -227,8 +267,25 @@ export function QuizSession({ username, quizId }: QuizSessionProps) {
                         <FormControlLabel
                           key={answer.id}
                           value={answer.id}
-                          control={<Radio />}
+                          control={
+                            <Radio 
+                              sx={{
+                                '&.Mui-checked': {
+                                  color: theme.palette.primary.main,
+                                },
+                              }}
+                            />
+                          }
                           label={answer.text}
+                          sx={{
+                            mb: 1,
+                            p: 1,
+                            borderRadius: 1,
+                            transition: 'all 0.2s',
+                            '&:hover': {
+                              backgroundColor: 'rgba(33, 150, 243, 0.04)',
+                            },
+                          }}
                         />
                       ))}
                     </RadioGroup>
@@ -238,6 +295,16 @@ export function QuizSession({ username, quizId }: QuizSessionProps) {
                     onClick={handleSubmitAnswer}
                     disabled={!selectedAnswer}
                     fullWidth
+                    size="large"
+                    sx={{
+                      background: 'linear-gradient(45deg, #2196f3 30%, #21CBF3 90%)',
+                      boxShadow: '0 3px 5px 2px rgba(33, 203, 243, .3)',
+                      fontWeight: 600,
+                      py: 1.5,
+                      '&:hover': {
+                        background: 'linear-gradient(45deg, #1976d2 30%, #1E88E5 90%)',
+                      },
+                    }}
                   >
                     Submit Answer
                   </Button>
@@ -245,35 +312,75 @@ export function QuizSession({ username, quizId }: QuizSessionProps) {
               </Paper>
             ) : null
           ) : (
-            <Paper elevation={3} sx={{ p: 4 }}>
-              <Stack spacing={3} alignItems="center">
-                <CelebrationIcon sx={{ fontSize: 60, color: 'primary.main' }} />
-                <Typography variant="h4" color="primary" align="center">
-                  You completed the quiz!
+            <Paper
+              elevation={4}
+              sx={{
+                p: 5,
+                textAlign: 'center',
+                background: 'linear-gradient(145deg, #ffffff 0%, #f5f5f5 100%)',
+                borderRadius: 3,
+              }}
+            >
+              <Stack spacing={4} alignItems="center">
+                <CelebrationIcon 
+                  sx={{ 
+                    fontSize: 80,
+                    color: theme.palette.primary.main,
+                    filter: 'drop-shadow(0 0 10px rgba(33, 150, 243, 0.3))',
+                  }} 
+                />
+                <Typography 
+                  variant="h4" 
+                  sx={{ 
+                    fontWeight: 600,
+                    background: 'linear-gradient(45deg, #2196f3 30%, #21CBF3 90%)',
+                    backgroundClip: 'text',
+                    textFillColor: 'transparent',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                  }}
+                >
+                  Quiz completed!
                 </Typography>
-                <Divider sx={{ width: '100%' }} />
-                <Stack spacing={2} sx={{ width: '100%', maxWidth: 400 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography variant="h6">Your Score:</Typography>
-                    <Typography variant="h4" color="primary.main">{userScore}</Typography>
-                  </Box>
-                </Stack>
+                <Typography 
+                  variant="h6" 
+                  sx={{ 
+                    color: theme.palette.text.secondary,
+                    fontWeight: 500,
+                  }}
+                >
+                  Your Score: {userScore}
+                </Typography>
               </Stack>
             </Paper>
           )}
 
           {/* Leaderboard */}
-          <Paper elevation={3} sx={{ p: 3 }}>
-            <Typography variant="h5" gutterBottom>
-              Live Leaderboard
+          <Paper
+            elevation={4}
+            sx={{
+              p: 3,
+              background: 'linear-gradient(145deg, #ffffff 0%, #f5f5f5 100%)',
+              borderRadius: 3,
+            }}
+          >
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                mb: 2,
+                fontWeight: 600,
+                color: theme.palette.primary.main,
+              }}
+            >
+              Leaderboard
             </Typography>
             <TableContainer>
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell>Rank</TableCell>
-                    <TableCell>Username</TableCell>
-                    <TableCell align="right">Score</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Rank</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Player</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 600 }}>Score</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -281,8 +388,10 @@ export function QuizSession({ username, quizId }: QuizSessionProps) {
                     <TableRow
                       key={entry.username}
                       sx={{
-                        backgroundColor:
-                          entry.username === username ? 'action.hover' : 'inherit',
+                        backgroundColor: entry.username === username ? 'rgba(33, 150, 243, 0.08)' : 'inherit',
+                        '&:hover': {
+                          backgroundColor: 'rgba(33, 150, 243, 0.04)',
+                        },
                       }}
                     >
                       <TableCell>
@@ -300,38 +409,27 @@ export function QuizSession({ username, quizId }: QuizSessionProps) {
             </TableContainer>
           </Paper>
         </Stack>
-      </Box>
 
-      {/* Notifications */}
-      <Snackbar
-        open={!!notification}
-        autoHideDuration={notification?.duration || 3000}
-        onClose={() => setNotification(null)}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-      >
-        <Alert
-          onClose={() => setNotification(null)}
-          severity={notification?.type || 'info'}
-          icon={notification?.type === 'success' ? <CheckCircleIcon /> : notification?.type === 'error' ? <CancelIcon /> : undefined}
-          sx={{ width: '100%' }}
-        >
-          {notification?.message}
-        </Alert>
-      </Snackbar>
-
-      {/* Error Alert */}
-      {error && (
+        {/* Notifications */}
         <Snackbar
-          open={!!error}
-          autoHideDuration={6000}
-          onClose={() => setError(null)}
+          open={!!notification}
+          autoHideDuration={notification?.duration || 3000}
+          onClose={() => setNotification(null)}
           anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         >
-          <Alert severity="error" onClose={() => setError(null)}>
-            {error}
+          <Alert
+            onClose={() => setNotification(null)}
+            severity={notification?.type || 'info'}
+            variant="filled"
+            sx={{
+              width: '100%',
+              boxShadow: '0 3px 5px 2px rgba(0, 0, 0, 0.1)',
+            }}
+          >
+            {notification?.message}
           </Alert>
         </Snackbar>
-      )}
+      </Box>
     </Container>
   )
 }

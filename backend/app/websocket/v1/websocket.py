@@ -81,7 +81,6 @@ async def initialize_joining_quiz(websocket: WebSocket, quiz_id: str):
                 
     except Exception as e:
         print(f"Error in join_quiz: {str(e)}")
-        await websocket.close(code=4000, reason=str(e))
     finally:
         # Remove connection from active connections
         if quiz_id in active_connections:
@@ -91,7 +90,6 @@ async def initialize_joining_quiz(websocket: WebSocket, quiz_id: str):
         
         # Unsubscribe from leaderboard updates
         leaderboard_service.unsubscribe(quiz_id, websocket)
-        
         await websocket.close()
 
 async def handle_answer_submission(websocket: WebSocket, quiz_id: str, user: User, question_id: int, answer_id: int):

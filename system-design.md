@@ -11,7 +11,7 @@ More assumptions:
 - 1 point per correct answer
 - The quiz creator can upload picture for each question
 - Real-time quiz visualization to show the current question for participants:
-    - The live quiz will change in real time when the host starts, moves to the next question, or completes the session.
+    - The live quiz will change real time after user submit an answer
 
 ### Functional Requirements:
 
