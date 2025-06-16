@@ -224,10 +224,10 @@ async def create_general_knowledge_quiz_data():
 
 async def create_mock_data():
     # Create users
-    # await create_users()
+    await create_users()
 
     # Create vocabulary quiz
-    # await create_vocabulary_quiz_data()
+    await create_vocabulary_quiz_data()
 
     # Create general knowledge quiz
     await create_general_knowledge_quiz_data()
