@@ -1,9 +1,9 @@
 # Presentation Video
 
 ## Real-Time Vocabulary Quiz System - ELSA Coding Challenge
-<a href="https://www.youtube.com/watch?v=wX_PqK45NF" target="_blank">https://www.youtube.com/watch?v=wX_PqK45NF</a>
-[![Video Thumbnail](images/YouTube.png)](https://www.youtube.com/watch?v=wX_PqK45NF){target="_blank" width=50%}
-
+<a href="https://youtu.be/4eka6yMfWIY" target="_blank">https://youtu.be/4eka6yMfWIY</a>
+[![Video Thumbnail](images/YouTube.png)](https://youtu.be/4eka6yMfWIY){target="_blank" width=50%}
+<!-- 
 ### Video Content
 
 This video presentation covers:
@@ -36,4 +36,4 @@ This video presentation covers:
 - Duration: 5-10 minutes
 - Language: English
 - Quality: 1080p
-- Upload Date: June 15th 2025
+- Upload Date: June 15th 2025 -->
